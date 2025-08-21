@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Captura 360°</title>
+    <title>Captura 360° - Visualizador Funcional</title>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4/dist/photo-sphere-viewer.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4/dist/photo-sphere-viewer.min.css">
@@ -191,6 +191,12 @@
             overflow: hidden;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
             display: none;
+            position: relative;
+        }
+        
+        #panorama {
+            width: 100%;
+            height: 100%;
         }
         
         .point-indicator {
@@ -266,7 +272,9 @@
             
             <div class="gallery" id="gallery"></div>
             
-            <div class="viewer-container" id="viewer"></div>
+            <div class="viewer-container" id="viewer">
+                <div id="panorama"></div>
+            </div>
         </div>
     </div>
 
@@ -286,6 +294,7 @@
             const gallery = document.getElementById('gallery');
             const viewer = document.getElementById('viewer');
             const calibrateBtn = document.getElementById('calibrate');
+            const panoramaContainer = document.getElementById('panorama');
             
             // Variáveis de estado
             let stream = null;
@@ -293,6 +302,7 @@
             let currentAngle = 0;
             let baseAngle = 0;
             let calibrationDone = false;
+            let panoramaViewer = null;
             
             // Pontos de captura (ângulos)
             const capturePoints = [0, 45, 90, 135, 180, 225, 270, 315];
@@ -394,7 +404,7 @@
                     
                     if (progress >= 100) {
                         clearInterval(interval);
-                        simulateStitching();
+                        createPanoramaViewer();
                     }
                 }, 100);
             });
@@ -403,6 +413,11 @@
             resetBtn.addEventListener('click', function() {
                 if (stream) {
                     stream.getTracks().forEach(track => track.stop());
+                }
+                
+                if (panoramaViewer) {
+                    panoramaViewer.destroy();
+                    panoramaViewer = null;
                 }
                 
                 video.srcObject = null;
@@ -458,53 +473,34 @@
                 }
             }
             
-            // Simular a costura das imagens (em uma aplicação real, usaria OpenCV.js)
-            function simulateStitching() {
-                status.textContent = 'Costurando imagens...';
+            // Criar visualizador de panorama
+            function createPanoramaViewer() {
+                status.textContent = 'Criando visualização 360°...';
                 
-                // Simular tempo de processamento
-                setTimeout(() => {
-                    // Gerar uma imagem de exemplo (em um caso real, seria a imagem equirretangular)
-                    const canvas = document.createElement('canvas');
-                    canvas.width = 2048;
-                    canvas.height = 1024;
-                    const ctx = canvas.getContext('2d');
-                    
-                    // Preencher com gradiente para simular uma imagem 360°
-                    const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
-                    gradient.addColorStop(0, '#3498db');
-                    gradient.addColorStop(0.5, '#2ecc71');
-                    gradient.addColorStop(1, '#e74c3c');
-                    ctx.fillStyle = gradient;
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    
-                    // Adicionar texto
-                    ctx.fillStyle = 'white';
-                    ctx.font = 'bold 40px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('Imagem 360° Simulada', canvas.width / 2, canvas.height / 2);
-                    
-                    const panoramaImage = canvas.toDataURL('image/jpeg');
-                    
-                    // Exibir o visualizador 360°
-                    viewer.style.display = 'block';
+                // Exibir o visualizador
+                viewer.style.display = 'block';
+                
+                // Usar uma imagem de exemplo para o panorama (em um caso real, seria a imagem gerada)
+                const panoramaImage = 'https://raw.githubusercontent.com/mistic100/Photo-Sphere-Viewer/master/example/Bryce-Canyon-National-Park-Mark-Doliner.jpg';
+                
+                // Inicializar o visualizador de panorama
+                panoramaViewer = new PhotoSphereViewer.Viewer({
+                    container: panoramaContainer,
+                    panorama: panoramaImage,
+                    caption: 'Imagem 360° de Exemplo',
+                    loading_img: 'https://photo-sphere-viewer.js.org/assets/photos/sphere.jpg',
+                    default_fov: 75,
+                    navbar: [
+                        'zoom',
+                        'move',
+                        'download',
+                        'fullscreen'
+                    ],
+                });
+                
+                panoramaViewer.on('ready', () => {
                     status.textContent = 'Visualização 360° pronta!';
-                    
-                    // Inicializar o visualizador (usando Photo Sphere Viewer)
-                    const panoramaViewer = new PhotoSphereViewer.Viewer({
-                        container: viewer,
-                        panorama: panoramaImage,
-                        caption: 'Imagem 360° Gerada',
-                        loading_img: 'https://photo-sphere-viewer.js.org/assets/photos/sphere.jpg',
-                        default_fov: 75,
-                        navbar: [
-                            'zoom',
-                            'move',
-                            'download',
-                            'fullscreen'
-                        ],
-                    });
-                }, 2000);
+                });
             }
             
             // Inicializar a interface
