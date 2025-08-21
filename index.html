@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Captura 360° - Visualizador Funcional</title>
+    <title>Captura 360° Profissional</title>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4/dist/photo-sphere-viewer.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4/dist/photo-sphere-viewer.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -16,7 +17,7 @@
         }
         
         body {
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            background: linear-gradient(135deg, #1a2980, #26d0ce);
             color: white;
             min-height: 100vh;
             overflow-x: hidden;
@@ -35,25 +36,33 @@
         }
         
         h1 {
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             margin-bottom: 10px;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(45deg, #fff, #e0f7fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
         }
         
         .subtitle {
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.5;
         }
         
         .app-container {
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            gap: 25px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
             border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .video-container {
@@ -61,16 +70,18 @@
             width: 100%;
             max-width: 800px;
             margin: 0 auto;
-            border-radius: 15px;
+            border-radius: 18px;
             overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            transform: translateZ(0);
         }
         
         #video {
             width: 100%;
             display: block;
             background: #000;
-            border-radius: 15px;
+            border-radius: 18px;
+            transform: scaleX(-1); /* Espelha a imagem para modo selfie */
         }
         
         .overlay {
@@ -87,111 +98,215 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 80px;
-            height: 80px;
-            border: 4px solid rgba(255, 255, 255, 0.5);
+            width: 90px;
+            height: 90px;
+            border: 5px solid rgba(255, 255, 255, 0.6);
             border-radius: 50%;
-            transition: all 0.3s ease;
+            transition: all 0.4s ease;
         }
         
         .target.active {
-            border-color: #4CAF50;
-            box-shadow: 0 0 20px #4CAF50;
+            border-color: #00E676;
+            box-shadow: 0 0 30px #00E676;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.7); }
+            70% { box-shadow: 0 0 0 20px rgba(0, 230, 118, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 230, 118, 0); }
+        }
+        
+        .crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 30px;
+            height: 30px;
+            transform: translate(-50%, -50%);
+            border: 2px solid white;
+            border-radius: 50%;
+        }
+        
+        .crosshair::before, .crosshair::after {
+            content: '';
+            position: absolute;
+            background: white;
+        }
+        
+        .crosshair::before {
+            width: 2px;
+            height: 20px;
+            top: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .crosshair::after {
+            width: 20px;
+            height: 2px;
+            top: 50%;
+            left: 5px;
+            transform: translateY(-50%);
         }
         
         .instructions {
             position: absolute;
-            bottom: 20px;
+            bottom: 25px;
             left: 0;
             width: 100%;
             text-align: center;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             font-weight: bold;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 10px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 12px;
+            backdrop-filter: blur(5px);
         }
         
         .controls {
             display: flex;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 20px;
             justify-content: center;
-            margin-top: 20px;
+            margin-top: 25px;
         }
         
         button {
-            padding: 12px 25px;
+            padding: 15px 30px;
             border: none;
             border-radius: 50px;
             background: linear-gradient(45deg, #2196F3, #21CBF3);
             color: white;
             font-weight: bold;
+            font-size: 1.1rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 6px 12px rgba(33, 150, 243, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(33, 150, 243, 0.5);
+        }
+        
+        button:active {
+            transform: translateY(1px);
         }
         
         button:disabled {
-            background: linear-gradient(45deg, #cccccc, #999999);
+            background: linear-gradient(45deg, #b0b0b0, #909090);
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
         }
         
+        .btn-capture {
+            background: linear-gradient(45deg, #F44336, #FF5252);
+            box-shadow: 0 6px 12px rgba(244, 67, 54, 0.4);
+        }
+        
+        .btn-process {
+            background: linear-gradient(45deg, #4CAF50, #66BB6A);
+            box-shadow: 0 6px 12px rgba(76, 175, 80, 0.4);
+        }
+        
+        .btn-reset {
+            background: linear-gradient(45deg, #FF9800, #FFA726);
+            box-shadow: 0 6px 12px rgba(255, 152, 0, 0.4);
+        }
+        
         .progress-container {
             width: 100%;
-            height: 20px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
+            height: 25px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
             overflow: hidden;
-            margin-top: 20px;
+            margin-top: 25px;
         }
         
         .progress-bar {
             height: 100%;
             width: 0%;
             background: linear-gradient(45deg, #FF9800, #FF5722);
-            border-radius: 10px;
+            border-radius: 12px;
             transition: width 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background-image: linear-gradient(
+                -45deg,
+                rgba(255, 255, 255, 0.2) 25%,
+                transparent 25%,
+                transparent 50%,
+                rgba(255, 255, 255, 0.2) 50%,
+                rgba(255, 255, 255, 0.2) 75%,
+                transparent 75%,
+                transparent
+            );
+            z-index: 1;
+            background-size: 50px 50px;
+            animation: move 2s linear infinite;
+        }
+        
+        @keyframes move {
+            0% { background-position: 0 0; }
+            100% { background-position: 50px 50px; }
         }
         
         .status {
             text-align: center;
-            margin-top: 10px;
+            margin-top: 15px;
             font-weight: bold;
+            font-size: 1.2rem;
+            min-height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 15px;
-            margin-top: 30px;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 20px;
+            margin-top: 35px;
         }
         
         .captured-image {
             width: 100%;
-            height: 100px;
+            height: 120px;
             object-fit: cover;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+        
+        .captured-image:hover {
+            transform: scale(1.05);
         }
         
         .viewer-container {
             width: 100%;
-            height: 400px;
-            margin-top: 30px;
-            border-radius: 15px;
+            height: 450px;
+            margin-top: 35px;
+            border-radius: 18px;
             overflow: hidden;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
             display: none;
             position: relative;
+            background: #000;
         }
         
         #panorama {
@@ -201,25 +316,91 @@
         
         .point-indicator {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            top: 25px;
+            right: 25px;
             background: rgba(0, 0, 0, 0.7);
-            padding: 10px 15px;
-            border-radius: 20px;
+            padding: 12px 20px;
+            border-radius: 25px;
             font-weight: bold;
+            font-size: 1.1rem;
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .calibration {
             text-align: center;
-            padding: 20px;
+            padding: 25px;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            margin-bottom: 20px;
+            border-radius: 18px;
+            margin-bottom: 25px;
+            backdrop-filter: blur(5px);
         }
+        
+        .calibration h2 {
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .angle-display {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #82B1FF;
+        }
+        
+        .compass {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+            position: relative;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .compass-needle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 4px;
+            height: 45%;
+            background: #F44336;
+            transform-origin: top center;
+            transform: translateX(-50%) rotate(0deg);
+            transition: transform 0.2s ease;
+        }
+        
+        .compass-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 12px;
+            height: 12px;
+            background: #F44336;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .compass-n, .compass-e, .compass-s, .compass-w {
+            position: absolute;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .compass-n { top: 5px; left: 50%; transform: translateX(-50%); }
+        .compass-e { top: 50%; right: 5px; transform: translateY(-50%); }
+        .compass-s { bottom: 5px; left: 50%; transform: translateX(-50%); }
+        .compass-w { top: 50%; left: 5px; transform: translateY(-50%); }
         
         @media (max-width: 768px) {
             h1 {
-                font-size: 2rem;
+                font-size: 2.2rem;
+            }
+            
+            .subtitle {
+                font-size: 1.1rem;
             }
             
             .controls {
@@ -229,53 +410,111 @@
             
             button {
                 width: 100%;
-                max-width: 300px;
+                max-width: 320px;
+                justify-content: center;
             }
+            
+            .gallery {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            }
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transform: translateX(100%);
+            transition: transform 0.4s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .notification.error {
+            border-left: 4px solid #F44336;
+        }
+        
+        .notification.warning {
+            border-left: 4px solid #FF9800;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Captura 360°</h1>
-            <p class="subtitle">Crie imagens panorâmicas diretamente no seu navegador</p>
+            <h1><i class="fas fa-camera"></i> Captura 360° Profissional</h1>
+            <p class="subtitle">Crie imagens panorâmicas incríveis diretamente no seu navegador com nossa ferramenta intuitiva</p>
         </header>
         
         <div class="app-container">
             <div class="calibration">
-                <h2>Calibração Inicial</h2>
+                <h2><i class="fas fa-compass"></i> Calibração Inicial</h2>
                 <p>Para começar, aponte a câmera para a frente (ponto 0°) e clique em "Calibrar"</p>
-                <button id="calibrate">Calibrar</button>
+                
+                <div class="compass">
+                    <div class="compass-needle" id="compass-needle"></div>
+                    <div class="compass-center"></div>
+                    <div class="compass-n">N</div>
+                    <div class="compass-e">L</div>
+                    <div class="compass-s">S</div>
+                    <div class="compass-w">O</div>
+                </div>
+                
+                <div class="angle-display" id="angle-display">0°</div>
+                
+                <button id="calibrate"><i class="fas fa-sync-alt"></i> Calibrar</button>
             </div>
             
             <div class="video-container">
                 <video id="video" autoplay playsinline></video>
                 <div class="overlay">
-                    <div class="target" id="target"></div>
+                    <div class="target" id="target">
+                        <div class="crosshair"></div>
+                    </div>
                     <div class="instructions" id="instructions">Posicione a câmera no ponto 0°</div>
-                    <div class="point-indicator" id="point-indicator">Ponto: 0°</div>
+                    <div class="point-indicator" id="point-indicator"><i class="fas fa-dot-circle"></i> Ponto: 0°</div>
                 </div>
             </div>
             
             <div class="controls">
-                <button id="start-camera">Iniciar Câmera</button>
-                <button id="capture" disabled>Capturar Imagem</button>
-                <button id="process" disabled>Processar 360°</button>
-                <button id="reset">Reiniciar</button>
+                <button id="start-camera"><i class="fas fa-video"></i> Iniciar Câmera</button>
+                <button id="capture" class="btn-capture" disabled><i class="fas fa-camera"></i> Capturar Imagem</button>
+                <button id="process" class="btn-process" disabled><i class="fas fa-cogs"></i> Processar 360°</button>
+                <button id="reset" class="btn-reset"><i class="fas fa-redo"></i> Reiniciar</button>
             </div>
             
             <div class="progress-container">
                 <div class="progress-bar" id="progress-bar"></div>
             </div>
             
-            <div class="status" id="status">Pronto para começar</div>
+            <div class="status" id="status">Pronto para começar. Clique em "Iniciar Câmera".</div>
             
+            <h3 style="text-align: center; margin-top: 20px;"><i class="fas fa-images"></i> Imagens Capturadas</h3>
             <div class="gallery" id="gallery"></div>
             
             <div class="viewer-container" id="viewer">
                 <div id="panorama"></div>
             </div>
         </div>
+    </div>
+
+    <div class="notification" id="notification">
+        <i class="fas fa-info-circle"></i>
+        <span id="notification-text"></span>
     </div>
 
     <script>
@@ -295,6 +534,10 @@
             const viewer = document.getElementById('viewer');
             const calibrateBtn = document.getElementById('calibrate');
             const panoramaContainer = document.getElementById('panorama');
+            const compassNeedle = document.getElementById('compass-needle');
+            const angleDisplay = document.getElementById('angle-display');
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notification-text');
             
             // Variáveis de estado
             let stream = null;
@@ -303,15 +546,29 @@
             let baseAngle = 0;
             let calibrationDone = false;
             let panoramaViewer = null;
+            let orientationHandler = null;
             
             // Pontos de captura (ângulos)
             const capturePoints = [0, 45, 90, 135, 180, 225, 270, 315];
             let currentPointIndex = 0;
             
+            // Mostrar notificação
+            function showNotification(message, type = 'info') {
+                notificationText.textContent = message;
+                notification.className = 'notification show ' + type;
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+            
             // Iniciar a câmera
             startCameraBtn.addEventListener('click', async function() {
                 try {
                     status.textContent = 'Acessando a câmera...';
+                    showNotification('Solicitando acesso à câmera...', 'info');
+                    
+                    // Tentar primeiro com a câmera traseira
                     stream = await navigator.mediaDevices.getUserMedia({ 
                         video: { 
                             width: { ideal: 1280 },
@@ -324,24 +581,97 @@
                     startCameraBtn.disabled = true;
                     captureBtn.disabled = false;
                     status.textContent = 'Câmera iniciada. Faça a calibração.';
+                    showNotification('Câmera iniciada com sucesso!', 'success');
                     
                     // Iniciar detecção de orientação
-                    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                        DeviceOrientationEvent.requestPermission()
-                            .then(permissionState => {
-                                if (permissionState === 'granted') {
-                                    window.addEventListener('deviceorientation', handleOrientation);
-                                }
-                            })
-                            .catch(console.error);
+                    if (typeof DeviceOrientationEvent !== 'undefined') {
+                        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                            // iOS - precisa solicitar permissão
+                            DeviceOrientationEvent.requestPermission()
+                                .then(permissionState => {
+                                    if (permissionState === 'granted') {
+                                        orientationHandler = handleOrientation;
+                                        window.addEventListener('deviceorientation', orientationHandler);
+                                    } else {
+                                        showNotification('Permissão de orientação negada. Use botões manuais.', 'warning');
+                                        initManualControls();
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Erro ao solicitar permissão de orientação:', error);
+                                    showNotification('Erro ao acessar sensores. Use botões manuais.', 'warning');
+                                    initManualControls();
+                                });
+                        } else {
+                            // Navegadores que não exigem permissão
+                            orientationHandler = handleOrientation;
+                            window.addEventListener('deviceorientation', orientationHandler);
+                        }
                     } else {
-                        window.addEventListener('deviceorientation', handleOrientation);
+                        showNotification('Seu navegador não suporta detecção de orientação. Use botões manuais.', 'warning');
+                        initManualControls();
                     }
                 } catch (error) {
                     console.error('Erro ao acessar a câmera:', error);
                     status.textContent = 'Erro ao acessar a câmera. Verifique as permissões.';
+                    showNotification('Erro ao acessar a câmera. Verifique as permissões.', 'error');
+                    
+                    // Tentar com a câmera frontal se a traseira falhar
+                    try {
+                        stream = await navigator.mediaDevices.getUserMedia({ 
+                            video: { 
+                                width: { ideal: 1280 },
+                                height: { ideal: 720 } 
+                            } 
+                        });
+                        
+                        video.srcObject = stream;
+                        startCameraBtn.disabled = true;
+                        captureBtn.disabled = false;
+                        status.textContent = 'Câmera frontal iniciada. Faça a calibração.';
+                        showNotification('Câmera frontal iniciada com sucesso!', 'success');
+                    } catch (secondError) {
+                        console.error('Erro ao acessar qualquer câmera:', secondError);
+                        status.textContent = 'Não foi possível acessar nenhuma câmera.';
+                        showNotification('Não foi possível acessar nenhuma câmera.', 'error');
+                    }
                 }
             });
+            
+            // Inicializar controles manuais para dispositivos sem sensores
+            function initManualControls() {
+                const manualControls = document.createElement('div');
+                manualControls.style.display = 'flex';
+                manualControls.style.gap = '10px';
+                manualControls.style.justifyContent = 'center';
+                manualControls.style.marginTop = '15px';
+                
+                const leftBtn = document.createElement('button');
+                leftBtn.innerHTML = '<i class="fas fa-arrow-left"></i>';
+                leftBtn.onclick = () => adjustAngle(-45);
+                
+                const rightBtn = document.createElement('button');
+                rightBtn.innerHTML = '<i class="fas fa-arrow-right"></i>';
+                rightBtn.onclick = () => adjustAngle(45);
+                
+                manualControls.appendChild(leftBtn);
+                manualControls.appendChild(rightBtn);
+                
+                document.querySelector('.calibration').appendChild(manualControls);
+            }
+            
+            // Ajustar ângulo manualmente
+            function adjustAngle(degrees) {
+                currentAngle = (currentAngle + degrees) % 360;
+                if (currentAngle < 0) currentAngle += 360;
+                
+                compassNeedle.style.transform = `translateX(-50%) rotate(${currentAngle}deg)`;
+                angleDisplay.textContent = `${currentAngle}°`;
+                
+                if (calibrationDone) {
+                    checkAlignment();
+                }
+            }
             
             // Calibrar o ponto inicial
             calibrateBtn.addEventListener('click', function() {
@@ -350,12 +680,41 @@
                 status.textContent = 'Calibração concluída. Você pode começar a captura.';
                 calibrateBtn.disabled = true;
                 updateTarget();
+                showNotification('Calibração concluída com sucesso!', 'success');
+                
+                // Verificar alinhamento imediatamente após calibrar
+                checkAlignment();
             });
+            
+            // Verificar alinhamento com o ponto atual
+            function checkAlignment() {
+                if (currentPointIndex < capturePoints.length) {
+                    const targetAngle = capturePoints[currentPointIndex];
+                    const adjustedAngle = (currentAngle - baseAngle + 360) % 360;
+                    const diff = Math.abs(adjustedAngle - targetAngle);
+                    
+                    if (diff <= 5 || diff >= 355) {
+                        target.classList.add('active');
+                        instructions.textContent = "Ângulo correto! Capture a imagem.";
+                        instructions.style.color = "#00E676";
+                    } else {
+                        target.classList.remove('active');
+                        instructions.style.color = "white";
+                        
+                        if ((targetAngle - adjustedAngle + 360) % 360 < 180) {
+                            instructions.textContent = `Gire à direita para ${targetAngle}°`;
+                        } else {
+                            instructions.textContent = `Gire à esquerda para ${targetAngle}°`;
+                        }
+                    }
+                }
+            }
             
             // Capturar imagem
             captureBtn.addEventListener('click', function() {
                 if (!calibrationDone) {
                     status.textContent = 'Por favor, faça a calibração primeiro.';
+                    showNotification('Faça a calibração antes de capturar.', 'warning');
                     return;
                 }
                 
@@ -378,6 +737,7 @@
                 gallery.appendChild(img);
                 
                 status.textContent = `Imagem capturada para ${capturePoints[currentPointIndex]}°`;
+                showNotification(`Imagem capturada para ${capturePoints[currentPointIndex]}°`, 'success');
                 
                 // Avançar para o próximo ponto
                 currentPointIndex++;
@@ -388,6 +748,7 @@
                     status.textContent = 'Todas as imagens foram capturadas. Clique em Processar 360°.';
                     captureBtn.disabled = true;
                     processBtn.disabled = false;
+                    showNotification('Todas as imagens capturadas! Clique em Processar 360°.', 'success');
                 }
             });
             
@@ -395,6 +756,7 @@
             processBtn.addEventListener('click', function() {
                 status.textContent = 'Processando imagens...';
                 processBtn.disabled = true;
+                showNotification('Processando imagens...', 'info');
                 
                 // Simular processamento
                 let progress = 0;
@@ -406,7 +768,7 @@
                         clearInterval(interval);
                         createPanoramaViewer();
                     }
-                }, 100);
+                }, 150);
             });
             
             // Reiniciar a aplicação
@@ -420,10 +782,15 @@
                     panoramaViewer = null;
                 }
                 
+                if (orientationHandler) {
+                    window.removeEventListener('deviceorientation', orientationHandler);
+                }
+                
                 video.srcObject = null;
                 capturedImages = [];
                 currentPointIndex = 0;
                 calibrationDone = false;
+                currentAngle = 0;
                 
                 startCameraBtn.disabled = false;
                 captureBtn.disabled = true;
@@ -431,11 +798,15 @@
                 calibrateBtn.disabled = false;
                 
                 progressBar.style.width = '0%';
-                status.textContent = 'Pronto para começar';
+                status.textContent = 'Pronto para começar. Clique em "Iniciar Câmera".';
                 gallery.innerHTML = '';
                 viewer.style.display = 'none';
                 
+                compassNeedle.style.transform = `translateX(-50%) rotate(0deg)`;
+                angleDisplay.textContent = '0°';
+                
                 updateTarget();
+                showNotification('Aplicação reiniciada com sucesso!', 'info');
             });
             
             // Atualizar a mira com base no ângulo atual
@@ -444,6 +815,8 @@
                     const targetAngle = capturePoints[currentPointIndex];
                     pointIndicator.textContent = `Ponto: ${targetAngle}°`;
                     instructions.textContent = `Gire para ${targetAngle}°`;
+                    instructions.style.color = "white";
+                    target.classList.remove('active');
                 }
             }
             
@@ -451,24 +824,11 @@
             function handleOrientation(event) {
                 if (event.alpha !== null) {
                     currentAngle = Math.round(event.alpha);
+                    compassNeedle.style.transform = `translateX(-50%) rotate(${currentAngle}deg)`;
+                    angleDisplay.textContent = `${currentAngle}°`;
                     
-                    if (calibrationDone && currentPointIndex < capturePoints.length) {
-                        const targetAngle = capturePoints[currentPointIndex];
-                        const adjustedAngle = (currentAngle - baseAngle + 360) % 360;
-                        const diff = Math.abs(adjustedAngle - targetAngle);
-                        
-                        if (diff <= 5 || diff >= 355) {
-                            target.classList.add('active');
-                            instructions.textContent = "Ângulo correto! Capture a imagem.";
-                        } else {
-                            target.classList.remove('active');
-                            
-                            if ((targetAngle - adjustedAngle + 360) % 360 < 180) {
-                                instructions.textContent = `Gire à direita para ${targetAngle}°`;
-                            } else {
-                                instructions.textContent = `Gire à esquerda para ${targetAngle}°`;
-                            }
-                        }
+                    if (calibrationDone) {
+                        checkAlignment();
                     }
                 }
             }
@@ -476,6 +836,7 @@
             // Criar visualizador de panorama
             function createPanoramaViewer() {
                 status.textContent = 'Criando visualização 360°...';
+                showNotification('Criando visualização 360°...', 'info');
                 
                 // Exibir o visualizador
                 viewer.style.display = 'block';
@@ -484,23 +845,45 @@
                 const panoramaImage = 'https://raw.githubusercontent.com/mistic100/Photo-Sphere-Viewer/master/example/Bryce-Canyon-National-Park-Mark-Doliner.jpg';
                 
                 // Inicializar o visualizador de panorama
-                panoramaViewer = new PhotoSphereViewer.Viewer({
-                    container: panoramaContainer,
-                    panorama: panoramaImage,
-                    caption: 'Imagem 360° de Exemplo',
-                    loading_img: 'https://photo-sphere-viewer.js.org/assets/photos/sphere.jpg',
-                    default_fov: 75,
-                    navbar: [
-                        'zoom',
-                        'move',
-                        'download',
-                        'fullscreen'
-                    ],
-                });
-                
-                panoramaViewer.on('ready', () => {
-                    status.textContent = 'Visualização 360° pronta!';
-                });
+                try {
+                    panoramaViewer = new PhotoSphereViewer.Viewer({
+                        container: panoramaContainer,
+                        panorama: panoramaImage,
+                        caption: 'Imagem 360° de Exemplo - Bryce Canyon',
+                        loading_img: 'https://photo-sphere-viewer.js.org/assets/photos/sphere.jpg',
+                        default_fov: 75,
+                        navbar: [
+                            'zoom',
+                            'move',
+                            'download',
+                            'fullscreen'
+                        ],
+                    });
+                    
+                    panoramaViewer.on('ready', () => {
+                        status.textContent = 'Visualização 360° pronta!';
+                        showNotification('Visualização 360° criada com sucesso!', 'success');
+                    });
+                    
+                    panoramaViewer.on('error', (err) => {
+                        console.error('Erro no visualizador:', err);
+                        status.textContent = 'Erro ao carregar visualização 360°.';
+                        showNotification('Erro ao carregar visualização 360°.', 'error');
+                    });
+                } catch (error) {
+                    console.error('Erro ao inicializar o visualizador:', error);
+                    status.textContent = 'Erro ao inicializar o visualizador.';
+                    showNotification('Erro ao inicializar o visualizador.', 'error');
+                    
+                    // Fallback - mostrar mensagem
+                    panoramaContainer.innerHTML = `
+                        <div style="color: white; text-align: center; padding-top: 200px;">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 20px;"></i>
+                            <h2>Visualizador 360° não pôde ser carregado</h2>
+                            <p>Esta é uma demonstração. Em uma aplicação real, as imagens capturadas seriam processadas aqui.</p>
+                        </div>
+                    `;
+                }
             }
             
             // Inicializar a interface
